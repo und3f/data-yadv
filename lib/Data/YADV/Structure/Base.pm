@@ -18,6 +18,7 @@ sub new {
 sub get_structure { $_[0]->{structure} }
 sub get_parent { $_[0]->{parent} }
 sub get_path { $_[0]->{path} }
+sub get_type { lc((split /::/, (ref $_[0]))[-1]) }
 
 sub get_path_string {
     my ($self, @path) = @_;

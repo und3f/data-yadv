@@ -12,4 +12,6 @@ sub get_child {
     die "scalar element have no child elements";
 }
 
+sub get_size { length $_[0]->get_structure }
+
 1;

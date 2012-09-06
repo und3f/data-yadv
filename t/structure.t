@@ -10,8 +10,11 @@ describe 'Data::YADV::Structure' => sub {
     my $structure;
 
     before each => sub {
-        $structure = Data::YADV::Structure->new(
-            [{key1 => {key2 => ['array1', 'array2']}}, 'scalar1']);
+        $structure = Data::YADV::Structure->new([
+                {key1 => {key2 => ['array1', 'array2'], key3 => ['array3']}},
+                'scalar1'
+            ]
+        );
     };
 
     it 'should return child element' => sub {
@@ -24,15 +27,53 @@ describe 'Data::YADV::Structure' => sub {
         is $structure->get_child(qw([0] {key3})), undef;
     };
 
+    it 'should return type node' => sub {
+        is $structure->get_type, 'array';
+        is $structure->get_child('[0]')->get_type, 'hash';
+        is $structure->get_child('[1]')->get_type, 'scalar';
+    };
+
+    it 'should return size of node' => sub {
+        is $structure->get_size, 2;
+        is $structure->get_child('[0]')->get_size, 1;
+        is $structure->get_child('[1]')->get_size, 7;
+    };
+
+    it 'should iterate through an array' => sub {
+        my @elements;
+        $structure->get_child(qw([0] {key1} {key2}))->each(
+            sub {
+                my ($structure, $index) = @_;
+                $elements[$index] = $structure->get_structure;
+            }
+        );
+
+        is_deeply \@elements, [qw/array1 array2/];
+    };
+
+    it 'should iterate through a hash' => sub {
+        my %elements;
+        $structure->get_child(qw([0] {key1}))->each(
+            sub {
+                my ($structure, $key) = @_;
+                $elements{$key} = $structure->get_structure;
+            }
+        );
+
+        is_deeply \%elements,
+          {key2 => [qw(array1 array2)], key3 => ['array3']};
+    };
+
     it 'should return stringified path' => sub {
-        is $structure->get_child(qw([0] {key1}))->get_path_string(qw({key2} [1])),
+        is $structure->get_child(qw([0] {key1}))
+          ->get_path_string(qw({key2} [1])),
           '[0]->{key1}->{key2}->[1]';
     };
 
     it 'should return parent node' => sub {
-        is $structure->get_child(qw([0] {key1}))
-          ->get_parent->get_parent, $structure;
-      }
+        is $structure->get_child(qw([0] {key1}))->get_parent->get_parent,
+          $structure;
+    };
 };
 
 runtests unless caller;

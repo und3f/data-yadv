@@ -54,6 +54,46 @@ describe 'Data::YADV' => sub {
         };
     };
 
+    describe "check_each" => sub {
+        it "should call callback on each array element" => sub {
+            Data::YADV->new([[qw(value1 value2)]], @opts)
+              ->check('check_each');
+
+            is @errors, 2;
+            my ($path, $message) = @{shift @errors};
+            is $path,    '$structure->[0]->[0]';
+            is $message, '0 - value1';
+
+            ($path, $message) = @{shift @errors};
+            is $path,    '$structure->[0]->[1]';
+            is $message, '1 - value2';
+        };
+
+        it "should call callback on each hash element" => sub {
+            Data::YADV->new([{key1 => 'value1', key2 => 'value2'}], @opts)
+              ->check('check_each');
+
+            is @errors, 2;
+            @errors = sort @errors;
+
+            my ($path, $message) = @{shift @errors};
+            is $path,    '$structure->[0]->{key1}';
+            is $message, 'key1 - value1';
+
+            ($path, $message) = @{shift @errors};
+            is $path,    '$structure->[0]->{key2}';
+            is $message, 'key2 - value2';
+        };
+
+        it "should fail on not iterable" => sub {
+            Data::YADV->new(['scalar'], @opts)->check('check_each');
+
+            is @errors, 1;
+            my ($path, $message) = @{pop @errors};
+            is $path,    '$structure->[0]';
+            is $message, 'scalar is not iterable';
+        };
+    };
 
     describe "check" => sub {
         it "should check schema" => sub {
@@ -96,6 +136,24 @@ runtests unless caller;
                 my ($self, $value) = @_;
 
                 $self->error($value);
+            }
+        );
+    }
+}
+
+{
+
+    package Schema::CheckEach;
+    use base 'Data::YADV::Checker';
+
+    sub verify {
+        my $self = shift;
+
+        $self->check_each(
+            '[0]' => sub {
+                my ($self, $element, $index) = @_;
+
+                $self->error("$index - $element");
             }
         );
     }

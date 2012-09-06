@@ -18,7 +18,7 @@ sub new {
 sub verify {
     my $self = shift;
 
-    $self->{cb}->($self, $self->structure->get_structure);
+    $self->{cb}->($self, $self->structure->get_structure, @_);
 }
 
 1;

@@ -22,4 +22,14 @@ sub get_child {
     $self->_build_node($entry, $structure->{$key})->get_child(@path);
 };
 
+sub get_size { keys %{$_[0]->get_structure} }
+
+sub each {
+    my ($self, $cb) = @_;
+
+    foreach my $key (keys %{$self->get_structure}) {
+        $cb->($self->get_child("{$key}"), $key);
+    }
+}
+
 1;

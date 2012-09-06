@@ -55,12 +55,33 @@ sub check_defined {
     }
 }
 
+sub check_each {
+    my ($self, @path) = @_;
+    my $cb = pop @path;
+
+    my $node = $self->get_child(@path) or return;
+
+    return $self->error(
+        $node->get_type . ' is not iterable', @path)
+      unless $node->can('each');
+
+    $node->each(
+        sub {
+            my ($node, $key) = @_;
+
+            $self->schema->build_checker('Data::YADV::CheckerASub',
+                $cb => $node)->verify($key);
+          }
+    );
+}
+
 sub error {
     my ($self, $message, @path) = @_;
 
     my $prefix = $self->structure->get_path_string(@path);
+    $prefix = '$structure' . ($prefix ? '->' : '') . $prefix;
 
-    $self->{error_cb}->("\$structure->$prefix", $message);
+    $self->{error_cb}->($prefix, $message);
 }
 
 1;

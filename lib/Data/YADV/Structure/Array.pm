@@ -21,4 +21,15 @@ sub get_child {
     $self->_build_node($entry, $structure->[$index])->get_child(@path);
 };
 
+sub get_size { scalar @{$_[0]->get_structure} }
+
+sub each {
+    my ($self, $cb) = @_;
+
+    my $size = $self->get_size;
+    for (my $i = 0; $i < $size; ++$i) {
+        $cb->($self->get_child("[$i]"), $i);
+    }
+}
+
 1;
