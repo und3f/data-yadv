@@ -19,11 +19,17 @@ sub new {
 }
 
 sub check {
-    my ($self, $scheme, @path) = @_;
+    my ($self, $schema, @path) = @_;
     
-    my $module = 'Schema::' . camelize($scheme);
+    my $module = $self->schema_to_module($schema);
     my $child  = $self->{structure}->get_child(@path);
     $self->build_checker($module, $child)->verify();
+}
+
+sub schema_to_module {
+    my ($self, $schema) = @_;
+
+    'Schema::' . camelize($schema);
 }
 
 sub build_checker {

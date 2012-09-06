@@ -57,22 +57,36 @@ sub check_defined {
 
 sub check_each {
     my ($self, @path) = @_;
-    my $cb = pop @path;
+    my $schema = pop @path;
 
     my $node = $self->get_child(@path) or return;
 
-    return $self->error(
-        $node->get_type . ' is not iterable', @path)
+    return $self->error($node->get_type . ' is not iterable', @path)
       unless $node->can('each');
 
+    my $factory = $self->_checker_factory($schema);
     $node->each(
         sub {
             my ($node, $key) = @_;
-
-            $self->schema->build_checker('Data::YADV::CheckerASub',
-                $cb => $node)->verify($key);
-          }
+            $factory->($node)->verify($key);
+        }
     );
+}
+
+sub _checker_factory {
+    my ($self, $schema) = @_;
+
+    if (ref $schema eq 'CODE') {
+        return sub {
+            $self->schema->build_checker('Data::YADV::CheckerASub', $schema,
+                @_);
+          }
+    }
+
+    return sub {
+        my $module = $self->schema->schema_to_module($schema);
+        $self->schema->build_checker($module, @_);
+    };
 }
 
 sub error {

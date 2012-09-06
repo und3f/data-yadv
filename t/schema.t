@@ -85,6 +85,16 @@ describe 'Data::YADV' => sub {
             is $message, 'key2 - value2';
         };
 
+        it "should use schema to check elements" => sub {
+            Data::YADV->new([{result => 'value1'}, {result => 'value2'}],
+                @opts)->check('check_each_schema');
+
+            is @errors, 2;
+            my ($path, $message) = @{shift @errors};
+            is $path,    '$structure->[0]->{result}';
+            is $message, 'value1';
+        };
+
         it "should fail on not iterable" => sub {
             Data::YADV->new(['scalar'], @opts)->check('check_each');
 
@@ -156,6 +166,18 @@ runtests unless caller;
                 $self->error("$index - $element");
             }
         );
+    }
+}
+
+{
+
+    package Schema::CheckEachSchema;
+    use base 'Data::YADV::Checker';
+
+    sub verify {
+        my $self = shift;
+
+        $self->check_each('check_value');
     }
 }
 
