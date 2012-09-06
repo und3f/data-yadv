@@ -11,6 +11,7 @@ describe 'Data::YADV' => sub {
     my $error_handler = sub {
         push @errors, [@_];
     };
+    my @opts = (error_handler => $error_handler);
 
     before each => sub {
         @errors = ();
@@ -18,14 +19,12 @@ describe 'Data::YADV' => sub {
 
     describe 'check_defined' => sub {
         it "should pass with correct data" => sub {
-            Data::YADV->new({key => 'ok'}, error_handler => $error_handler)
-              ->check('check_defined');
+            Data::YADV->new({key => 'ok'}, @opts)->check('check_defined');
             ok !@errors;
         };
 
         it "should fail on undefined element" => sub {
-            Data::YADV->new({key => undef}, error_handler => $error_handler)
-              ->check('check_defined');
+            Data::YADV->new({key => undef}, @opts)->check('check_defined');
             is @errors, 1;
             my ($path, $message) = @{pop @errors};
 
@@ -34,8 +33,7 @@ describe 'Data::YADV' => sub {
         };
 
         it "should fail on non existence element" => sub {
-            Data::YADV->new({}, error_handler => $error_handler)
-              ->check('check_defined');
+            Data::YADV->new({}, @opts)->check('check_defined');
             is @errors, 1;
             my ($path, $message) = @{pop @errors};
 
@@ -46,10 +44,8 @@ describe 'Data::YADV' => sub {
 
     describe "check_value" => sub {
         it "should call proper callback" => sub {
-            Data::YADV->new(
-                {result => 'secret'},
-                error_handler => $error_handler
-            )->check('check_value');
+            Data::YADV->new({result => 'secret'}, @opts)
+              ->check('check_value');
 
             is @errors, 1;
             my ($path, $message) = @{pop @errors};
@@ -58,12 +54,11 @@ describe 'Data::YADV' => sub {
         };
     };
 
+
     describe "check" => sub {
         it "should check schema" => sub {
-            Data::YADV->new(
-                [{key => 'ok'}, {result => 'another secret'}],
-                error_handler => $error_handler
-            )->check('check');
+            Data::YADV->new([{key => 'ok'}, {result => 'another secret'}],
+                @opts)->check('check');
 
             is @errors, 1;
             my ($path, $message) = @{pop @errors};
