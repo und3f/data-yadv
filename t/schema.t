@@ -40,6 +40,11 @@ describe 'Data::YADV' => sub {
             is $path,    '$structure->{key}';
             is $message, 'element not found';
         };
+
+        it "should accept structures" => sub {
+            Data::YADV->new({key => 'ok'}, @opts)->check('check_structure');
+            ok !@errors;
+        };
     };
 
     describe "check_value" => sub {
@@ -130,6 +135,18 @@ runtests unless caller;
         my $self = shift;
 
         $self->check_defined('{key}');
+    }
+};
+
+{
+
+    package Schema::CheckStructure;
+    use base 'Data::YADV::Checker';
+
+    sub verify {
+        my $self = shift;
+
+        $self->check_defined($self->structure, '{key}');
     }
 };
 

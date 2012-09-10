@@ -76,8 +76,8 @@ sub _prepare_structure {
 
     my $structure = $elements[0];
     if (ref $structure && $structure->can('get_child')) {
-        pop @elements;
-        $structure->get_child(@elements);
+        shift @elements;
+        $structure = $structure->get_child(@elements);
     }
     else {
         $structure = $self->get_child(@elements) or return;
