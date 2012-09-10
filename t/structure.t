@@ -65,14 +65,18 @@ describe 'Data::YADV::Structure' => sub {
     };
 
     it 'should return stringified path' => sub {
-        is $structure->get_child(qw([0] {key1}))
+        is_deeply $structure->get_child(qw([0] {key1}))
           ->get_path_string(qw({key2} [1])),
           '[0]->{key1}->{key2}->[1]';
     };
 
     it 'should return parent node' => sub {
-        is $structure->get_child(qw([0] {key1}))->get_parent->get_parent,
+        is_deeply $structure->get_child(qw([0] {key1}))->get_parent->get_parent,
           $structure;
+    };
+
+    it 'should return parent node with get_child' => sub {
+        is_deeply $structure->get_child(qw([0] {key1} {key2} [0] .. .. .. ..)), $structure;
     };
 };
 

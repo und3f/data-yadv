@@ -5,9 +5,8 @@ use warnings;
 
 use base 'Data::YADV::Structure::Base';
 
-sub get_child {
-    my ($self, @path) = @_;
-    return $self unless @path;
+sub _get_child_node {
+    my ($self, $entry) = @_;
 
     die "scalar element have no child elements";
 }

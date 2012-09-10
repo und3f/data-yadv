@@ -5,20 +5,16 @@ use warnings;
 
 use base 'Data::YADV::Structure::Base';
 
-sub get_child {
-    my ($self, @path) = @_;
-
-    return $self unless @path;
-
-    my $structure = $self->get_structure;
-    my $entry = shift @path;
+sub _get_child_node {
+    my ($self, $entry) = @_;
 
     $self->die(qq(Wrong array index), $entry) unless $entry =~ /^\[(.+)\]$/;
     my $index = $1;
 
+    my $structure = $self->get_structure;
     return undef unless $index >= 0 && $index < scalar @$structure;
 
-    $self->_build_node($entry, $structure->[$index])->get_child(@path);
+    $self->_build_node($entry, $structure->[$index]);
 };
 
 sub get_size { scalar @{$_[0]->get_structure} }
