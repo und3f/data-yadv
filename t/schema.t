@@ -189,7 +189,7 @@ runtests unless caller;
     sub verify {
         my $self = shift;
 
-        $self->check(check_defined => '[0]');
-        $self->check(check_value   => '[1]');
+        $self->check('[0]' => 'check_defined');
+        $self->check('[1]' => 'check_value');
     }
 }

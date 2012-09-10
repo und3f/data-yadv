@@ -13,14 +13,15 @@ sub new {
 }
 
 sub structure { $_[0]->{structure} }
-sub schema { $_[0]->{schema} }
+sub schema    { $_[0]->{schema} }
 
 sub get_child {
     my ($self, @path) = @_;
 
     my $child = try {
         $self->structure->get_child(@path);
-    } catch {
+    }
+    catch {
         $self->error($_, @path);
     };
 
@@ -30,47 +31,69 @@ sub get_child {
 }
 
 sub check {
-    my ($self, $schema, @path) = @_;
-    
-    $self->schema->check($schema, (@{$self->structure->get_path}, @path));
+    my $self = shift;
+    my ($structure, $factory) = $self->_prepare_arguments(@_) or return;
+
+    $factory->($structure)->verify();
 }
 
 sub check_value {
-    my ($self, @path) = @_;
-    my $cb = pop @path;
-
-    my $child = $self->get_child(@path) or return;
+    my $self  = shift;
+    my $cb    = pop;
+    my $child = $self->_prepare_structure(@_) or return;
 
     $self->schema->build_checker('Data::YADV::CheckerASub', $cb => $child)
       ->verify();
 }
 
 sub check_defined {
-    my ($self, @path) = @_;
+    my $self = shift;
+    my $structure = $self->_prepare_structure(@_) or return;
 
-    my $structure = $self->get_child(@path) or return;
-    
     if (not defined $structure->get_structure) {
-        $self->error('element not defined', @path);
+        $self->error('element not defined', @_);
     }
 }
 
 sub check_each {
-    my ($self, @path) = @_;
-    my $schema = pop @path;
+    my $self = shift;
+    my ($node, $factory) = $self->_prepare_arguments(@_) or return;
 
-    my $node = $self->get_child(@path) or return;
-
-    return $self->error($node->get_type . ' is not iterable', @path)
+    return $self->error($node->get_type . ' is not iterable',
+        @{$node->get_path})
       unless $node->can('each');
 
-    my $factory = $self->_checker_factory($schema);
     $node->each(
         sub {
             my ($node, $key) = @_;
             $factory->($node)->verify($key);
         }
     );
+}
+
+sub _prepare_structure {
+    my ($self, @elements) = @_;
+
+    my $structure = $elements[0];
+    if (ref $structure && $structure->can('get_child')) {
+        pop @elements;
+        $structure->get_child(@elements);
+    }
+    else {
+        $structure = $self->get_child(@elements) or return;
+    }
+
+    $structure;
+}
+
+sub _prepare_arguments {
+    my ($self, @elements) = @_;
+    my $schema = pop @elements;
+
+    my $structure = $self->_prepare_structure(@elements) or return;
+    my $checker_factory = $self->_checker_factory($schema);
+
+    ($structure, $checker_factory);
 }
 
 sub _checker_factory {
