@@ -45,6 +45,15 @@ describe 'Data::YADV' => sub {
             Data::YADV->new({key => 'ok'}, @opts)->check('check_structure');
             ok !@errors;
         };
+
+        it "should accept structures and fail if it is missed" => sub {
+            Data::YADV->new({}, @opts)->check('check_structure');
+            is @errors, 1;
+            my ($path, $message) = @{pop @errors};
+
+            is $path,    '$structure->{key}';
+            is $message, 'element not found';
+        };
     };
 
     describe "check_value" => sub {

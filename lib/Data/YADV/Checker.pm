@@ -15,21 +15,6 @@ sub new {
 sub structure { $_[0]->{structure} }
 sub schema    { $_[0]->{schema} }
 
-sub get_child {
-    my ($self, @path) = @_;
-
-    my $child = try {
-        $self->structure->get_child(@path);
-    }
-    catch {
-        $self->error($_, @path);
-    };
-
-    $self->error('element not found', @path) unless defined $child;
-
-    $child;
-}
-
 sub check {
     my $self = shift;
     my ($structure, $factory) = $self->_prepare_arguments(@_) or return;
@@ -71,19 +56,32 @@ sub check_each {
     );
 }
 
+sub _get_child {
+    my ($self, $structure, @path) = @_;
+
+    my $child = try {
+        $structure->get_child(@path);
+    }
+    catch {
+        $self->error($_, @path);
+    };
+
+    $self->error('element not found', @path) unless defined $child;
+
+    $child;
+}
+
 sub _prepare_structure {
     my ($self, @elements) = @_;
 
     my $structure = $elements[0];
     if (ref $structure && $structure->can('get_child')) {
         shift @elements;
-        $structure = $structure->get_child(@elements);
-    }
-    else {
-        $structure = $self->get_child(@elements) or return;
+    } else {
+        $structure = $self->structure;
     }
 
-    $structure;
+    $self->_get_child($structure, @elements);
 }
 
 sub _prepare_arguments {
