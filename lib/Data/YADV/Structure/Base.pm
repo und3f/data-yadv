@@ -37,6 +37,14 @@ sub get_child {
     $node && $node->get_child(@path);
 };
 
+sub get_root {
+    my $self = shift;
+
+    my $parent = $self->get_parent;
+    return $self unless $parent;
+    $parent->get_root;
+}
+
 sub get_path_string {
     my ($self, @path) = @_;
     _stringify_path(@{$self->{path}}, @path);

@@ -78,6 +78,10 @@ describe 'Data::YADV::Structure' => sub {
     it 'should return parent node with get_child' => sub {
         is_deeply $structure->get_child(qw([0] {key1} {key2} [0] .. .. .. ..)), $structure;
     };
+
+    it 'should return root node' => sub {
+        is_deeply $structure->get_child(qw([0] {key1} {key2} [0]))->get_root(), $structure;
+    };
 };
 
 runtests unless caller;
