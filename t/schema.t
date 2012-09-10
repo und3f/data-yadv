@@ -88,7 +88,7 @@ describe 'Data::YADV' => sub {
               ->check('check_each');
 
             is @errors, 2;
-            @errors = sort @errors;
+            @errors = sort {$a->[0] cmp $b->[0]} @errors;
 
             my ($path, $message) = @{shift @errors};
             is $path,    '$structure->[0]->{key1}';

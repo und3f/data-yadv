@@ -63,10 +63,10 @@ sub _get_child {
         $structure->get_child(@path);
     }
     catch {
-        $self->error($_, @path);
+        $self->_error_against_structure($structure, $_, @path);
     };
 
-    $self->error('element not found', @path) unless defined $child;
+    $self->_error_against_structure($structure, 'element not found', @path) unless defined $child;
 
     $child;
 }
@@ -111,9 +111,15 @@ sub _checker_factory {
 }
 
 sub error {
-    my ($self, $message, @path) = @_;
+    my $self = shift;
 
-    my $prefix = $self->structure->get_path_string(@path);
+    $self->_error_against_structure($self->structure, @_);
+}
+
+sub _error_against_structure {
+    my ($self, $structure, $message, @path) = @_;
+
+    my $prefix = $structure->get_path_string(@path);
     $prefix = '$structure' . ($prefix ? '->' : '') . $prefix;
 
     $self->{error_cb}->($prefix, $message);
