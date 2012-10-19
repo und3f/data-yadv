@@ -12,7 +12,7 @@ sub _get_child_node {
     my $index = $1;
 
     my $structure = $self->get_structure;
-    return undef unless $index >= 0 && $index < scalar @$structure;
+    return undef unless abs($index) < scalar @$structure;
 
     $self->_build_node($entry, $structure->[$index]);
 };

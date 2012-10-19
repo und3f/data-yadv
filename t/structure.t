@@ -18,7 +18,7 @@ describe 'Data::YADV::Structure' => sub {
     };
 
     it 'should return child element' => sub {
-        is $structure->get_child(qw([0] {key1} {key2} [1]))->get_structure,
+        is $structure->get_child(qw([0] {key1} {key2} [-1]))->get_structure,
           'array2';
     };
 
